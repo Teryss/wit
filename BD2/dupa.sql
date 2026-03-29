@@ -140,12 +140,12 @@ create table lekcje (
 
 drop table obecnosci cascade constraints;
 create table obecnosci (
-   student_numer      integer,
-   lekcje_dzien       date,
-   lekcje_godzina     char(8),
-   lekcje_klasa       varchar2(5 char),
+   student_numer      integer not null,
+   lekcje_dzien       date not null,
+   lekcje_godzina     char(8) not null,
+   lekcje_klasa       varchar2(5 char) not null,
    obecnoscrfid       char(1),
-   obecnoscnauczyciel char(1),
+   obecnoscnauczyciel char(1) not null,
    constraint obecnosci_pk
       primary key ( student_numer,
                     lekcje_dzien,
@@ -196,6 +196,20 @@ insert into obecnosci values ( 123,
                                '18:30',
                                'SALA1',
                                'T',
-                               'N'
-                               );
-select * from OBECNOSCI, STUDENT WHERE OBECNOSCI.STUDENT_NUMER = STUDENT.NUMERALBUMU ;
+                               'N' );
+insert into obecnosci values ( 125,
+                               to_date('5-09-1930','DD-MM-YYYY'),
+                               '18:30',
+                               'SALA1',
+                               'T',
+                               'N' );
+
+select *
+  from obecnosci;
+
+select *
+  from obecnosci,
+       student
+ where obecnosci.student_numer = student.numeralbumu;
+
+commit;
