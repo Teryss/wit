@@ -90,161 +90,112 @@ BLOB --filmy, zdjecia
 
 
 -- =========================================
--- USUWANIE TABEL (jeœli istniej¹)
+-- USUWANIE TABEL (jeï¿½li istniejï¿½)
 -- =========================================
-DROP TABLE obecnosci CASCADE CONSTRAINTS;
-DROP TABLE lekcje CASCADE CONSTRAINTS;
-DROP TABLE studenci CASCADE CONSTRAINTS;
-DROP TABLE nauczyciele CASCADE CONSTRAINTS;
+--DROP TABLE obecnosci CASCADE CONSTRAINTS;
+--DROP TABLE lekcje CASCADE CONSTRAINTS;
+--
 
--- =========================================
--- TABELA: STUDENCI
--- =========================================
-CREATE TABLE studenci (
-    numerAlbumu        NUMBER(10),
-    imieNazwiskoStudenta VARCHAR2(100 CHAR) NOT NULL,
-    grupaDziekanska    VARCHAR2(10 CHAR),
-    studentSkreslony   CHAR(1) DEFAULT 'N' NOT NULL,
-
-    CONSTRAINT studenci_PK PRIMARY KEY (numerAlbumu),
-    CONSTRAINT studenci_SKR CHECK (studentSkreslony IN ('T','N'))
+drop table student cascade constraints;
+create table student (
+   numeralbumu  integer not null,
+   imienazwisko varchar2(100 char) not null,
+   grupa        varchar2(10 char),
+   czyskreslony char(1),
+   constraint student_pk primary key ( numeralbumu ),
+   constraint student_skr check ( czyskreslony in ( 'T',
+                                                    'N' ) )
 );
 
-create table twojastara (
-    rozmiar number(1000000),
-    imie varchar(100 char) NOT NULL,
-    
-    CONSTRAINT twojastara_PK PRIMARY KEY (imie),
-)
-
--- =========================================
--- TABELA: NAUCZYCIELE
--- =========================================
-CREATE TABLE nauczyciele (
-    loginNauczyciela       VARCHAR2(10 CHAR),
-    imieNazwiskoNauczyciela VARCHAR2(200 CHAR) NOT NULL,
-    emailNauczyciela       VARCHAR2(50 CHAR),
-    idNauczyciela          VARCHAR2(50 CHAR),
-
-    CONSTRAINT nauczyciele_PK PRIMARY KEY (loginNauczyciela),
-    CONSTRAINT nauczyciele_EMAIL_UN UNIQUE (emailNauczyciela)
+drop table nauczyciel cascade constraints;
+create table nauczyciel (
+   login        varchar2(10 char) not null,
+   imienazwisko varchar2(200 char) not null,
+   email        varchar2(50 char),
+   jid          varchar2(50 char),
+   constraint nauczyciel_pk primary key ( login ),
+   constraint nauczyciel_uq unique ( email )
 );
 
--- =========================================
--- TABELA: LEKCJE
--- =========================================
-CREATE TABLE lekcje (
-    dzien              DATE,
-    godzina            CHAR(8),
-    klasa              VARCHAR2(5 CHAR),
-    tematZajec         VARCHAR2(500 CHAR),
-    nazwaGrupy         VARCHAR2(100 CHAR),
-    semestrAkademicki  VARCHAR2(50 CHAR),
-    symbolKursu        VARCHAR2(10 CHAR),
-    NAUCZYCIELE_loginNauczyciela VARCHAR2(10 CHAR) NOT NULL,
-
-    CONSTRAINT lekcje_PK PRIMARY KEY (dzien, godzina, klasa),
-
-    CONSTRAINT lekcje_TEMAT_UN UNIQUE 
-        (tematZajec, nazwaGrupy, semestrAkademicki, symbolKursu),
-
-    CONSTRAINT lekcje_nauczyciele_FK FOREIGN KEY 
-        (NAUCZYCIELE_loginNauczyciela)
-        REFERENCES nauczyciele(loginNauczyciela)
+drop table lekcje cascade constraints;
+create table lekcje (
+   dzien             date not null,
+   godzina           char(8) not null,
+   klasa             varchar2(5 char) not null,
+   temat             varchar2(500 char),
+   nazwagrupy        varchar2(100 char),
+   semestr           varchar2(50 char),
+   symbolkursu       varchar2(10 char),
+   nauczyciele_login varchar2(10 char) not null,
+   constraint lekcje_pk primary key ( dzien,
+                                      godzina,
+                                      klasa ),
+   constraint lekcje_uq unique ( temat,
+                                 nazwagrupy,
+                                 semestr,
+                                 symbolkursu ),
+   constraint lekcje_nauczyciel foreign key ( nauczyciele_login )
+      references nauczyciel ( login )
 );
 
--- =========================================
--- TABELA: OBECNOSCI
--- =========================================
-CREATE TABLE obecnosci (
-    STUDENCI_numerAlbumu NUMBER(10),
-    LEKCJE_dzien         DATE,
-    LEKCJE_godzina       CHAR(8),
-    LEKCJE_klasa         VARCHAR2(5 CHAR),
-    obecnoscRFID         CHAR(1),
-    obecnoscNauczyciel   CHAR(1),
-
-    CONSTRAINT obecnosci_PK PRIMARY KEY 
-        (STUDENCI_numerAlbumu, LEKCJE_dzien, LEKCJE_godzina, LEKCJE_klasa),
-
-    CONSTRAINT obecnosci_studenci_FK FOREIGN KEY 
-        (STUDENCI_numerAlbumu)
-        REFERENCES studenci(numerAlbumu),
-
-    CONSTRAINT obecnosci_lekcje_FK FOREIGN KEY 
-        (LEKCJE_dzien, LEKCJE_godzina, LEKCJE_klasa)
-        REFERENCES lekcje(dzien, godzina, klasa)
+drop table obecnosci cascade constraints;
+create table obecnosci (
+   student_numer      integer,
+   lekcje_dzien       date,
+   lekcje_godzina     char(8),
+   lekcje_klasa       varchar2(5 char),
+   obecnoscrfid       char(1),
+   obecnoscnauczyciel char(1),
+   constraint obecnosci_pk
+      primary key ( student_numer,
+                    lekcje_dzien,
+                    lekcje_godzina,
+                    lekcje_klasa ),
+   constraint obecnosci_lekcje_fk
+      foreign key ( lekcje_dzien,
+                    lekcje_godzina,
+                    lekcje_klasa )
+         references lekcje ( dzien,
+                             godzina,
+                             klasa ),
+   constraint obecnosci_studenci_f foreign key ( student_numer )
+      references student ( numeralbumu )
 );
 
--- =========================================
--- STUDENCI
--- =========================================
-INSERT INTO studenci VALUES (1001, 'Jan Kowalski', 'INF1', 'N');
-INSERT INTO studenci VALUES (1002, 'Anna Nowak', 'INF1', 'N');
-INSERT INTO studenci VALUES (1003, 'Piotr Zielinski', 'INF2', 'T');
+insert into nauczyciel values ( 'jd',
+                                'Jan Disowski',
+                                'jd@jd.com',
+                                'jdd' );
+select *
+  from nauczyciel;
 
--- =========================================
--- NAUCZYCIELE
--- =========================================
-INSERT INTO nauczyciele VALUES ('kowal_j', 'Jan Kowal', 'kowal@szkola.pl', 'N001');
-INSERT INTO nauczyciele VALUES ('nowak_a', 'Adam Nowak', 'nowak@szkola.pl', 'N002');
+insert into student values ( 123,
+                             'Adam Wdowiarek',
+                             'INF4',
+                             'N' );
+insert into student values ( 125,
+                             'Jan Kowalski',
+                             'INF3',
+                             'N' );
+select *
+  from student;
 
--- =========================================
--- LEKCJE
--- =========================================
-INSERT INTO lekcje VALUES (
-    DATE '2024-10-01', '08:00', 'A1',
-    'Bazy danych - wprowadzenie',
-    'INF1', '2024Z', 'BD101',
-    'kowal_j'
-);
+insert into lekcje values ( to_date('5-09-1930','DD-MM-YYYY'),
+                            '18:30',
+                            'SALA1',
+                            'Tematyka dupa',
+                            'INF3',
+                            'SEM1',
+                            'INF',
+                            'jd' );
+select *
+  from lekcje;
 
-INSERT INTO lekcje VALUES (
-    DATE '2024-10-01', '10:00', 'A1',
-    'Programowanie',
-    'INF1', '2024Z', 'PRG101',
-    'nowak_a'
-);
-
--- =========================================
--- OBECNOSCI
--- =========================================
-INSERT INTO obecnosci VALUES (1001, DATE '2024-10-01', '08:00', 'A1', 'T', 'T');
-INSERT INTO obecnosci VALUES (1002, DATE '2024-10-01', '08:00', 'A1', 'N', 'T');
-INSERT INTO obecnosci VALUES (1001, DATE '2024-10-01', '10:00', 'A1', 'T', 'T');
-
-SELECT * FROM studenci;
-SELECT * FROM nauczyciele;
-SELECT * FROM lekcje;
-SELECT * FROM obecnosci;
-
-SELECT 
-    s.imieNazwiskoStudenta,
-    l.tematZajec,
-    l.dzien,
-    l.godzina,
-    o.obecnoscRFID,
-    o.obecnoscNauczyciel
-FROM obecnosci o
-JOIN studenci s 
-    ON o.STUDENCI_numerAlbumu = s.numerAlbumu
-JOIN lekcje l 
-    ON o.LEKCJE_dzien = l.dzien
-   AND o.LEKCJE_godzina = l.godzina
-   AND o.LEKCJE_klasa = l.klasa;
-   
-SELECT 
-    l.tematZajec,
-    n.imieNazwiskoNauczyciela
-FROM lekcje l
-JOIN nauczyciele n 
-    ON l.NAUCZYCIELE_loginNauczyciela = n.loginNauczyciela;
-    
-SELECT 
-    s.imieNazwiskoStudenta,
-    COUNT(*) AS liczba_zajec,
-    SUM(CASE WHEN o.obecnoscRFID = 'T' THEN 1 ELSE 0 END) AS obecnosci
-FROM obecnosci o
-JOIN studenci s 
-    ON o.STUDENCI_numerAlbumu = s.numerAlbumu
-GROUP BY s.imieNazwiskoStudenta;
+insert into obecnosci values ( 123,
+                               to_date('5-09-1930','DD-MM-YYYY'),
+                               '18:30',
+                               'SALA1',
+                               'T',
+                               'N'
+                               );
+select * from OBECNOSCI, STUDENT WHERE OBECNOSCI.STUDENT_NUMER = STUDENT.NUMERALBUMU ;
